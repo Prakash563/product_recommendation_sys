@@ -575,6 +575,7 @@ model_bundle = {
     "global_top_products": global_top_products,
     "seen_by_user": seen_by_user,
     "popular_products": popular_products,
+    "clustering_comparison": clustering_comparison,
 }
 
 joblib.dump(model_bundle, MODEL_PATH, compress=3)
