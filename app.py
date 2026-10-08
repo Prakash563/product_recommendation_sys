@@ -54,6 +54,8 @@ product_ids = bundle["product_ids"]
 product_to_idx = bundle["product_to_idx"]
 global_top_products = bundle["global_top_products"]
 popular_products = bundle["popular_products"]
+user_options = sorted(user_ids.tolist())
+product_options = sorted(product_ids.tolist())
 seen_by_user = bundle["seen_by_user"]
 
 CLUSTER_ARTIFACTS = {
@@ -133,18 +135,15 @@ tab1, tab2, tab3 = st.tabs(
 with tab1:
     st.subheader("User-Based Product Recommendations")
 
-    user_id_input = st.text_input("Enter User ID", value=str(user_ids[0])).strip()
+    selected_user = st.selectbox("Select User ID", user_options, key="user_select")
 
     if st.button("Recommend Products for User"):
         cluster, recommendations = recommend_for_user(
-            user_id_input, model_name=model_choice, top_n=top_n
+            selected_user, model_name=model_choice, top_n=top_n
         )
 
         st.write("Selected Model:", model_choice)
         st.write("User Cluster:", cluster)
-
-        if isinstance(cluster, str):
-            st.info("This user is not in the training data, so popular products are shown.")
 
         recommendation_df = pd.DataFrame({"recommended_productid": recommendations})
         recommendation_df.index = range(1, len(recommendation_df) + 1)
@@ -153,13 +152,13 @@ with tab1:
 with tab2:
     st.subheader("Cosine Similarity Product Recommendations")
 
-    product_id_input = st.text_input("Enter Product ID", value=str(product_ids[0])).strip()
+    selected_product = st.selectbox("Select Product ID", product_options, key="product_select")
 
     if st.button("Find Similar Products"):
-        similar_products = recommend_similar_products(product_id_input, top_n=top_n)
+        similar_products = recommend_similar_products(selected_product, top_n=top_n)
 
         if similar_products.empty:
-            st.warning("Product ID not found.")
+            st.warning("No similar products found for this product.")
         else:
             st.dataframe(similar_products, hide_index=True)
 
