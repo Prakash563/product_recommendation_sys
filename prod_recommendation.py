@@ -7,6 +7,8 @@ Original file is located at
     https://colab.research.google.com/drive/1Tp_H2A6Md-llnteNqCAszyfL1lvvrLo-
 """
 
+
+
 """
 Product Recommendation System - training pipeline
 =================================================
@@ -16,7 +18,7 @@ Models : popularity baseline, item-item CF (cosine similarity), and user
          Agglomerative)
 Output : models/product_recommendation_models.joblib  (loaded by app.py)
 """
-
+#importing overall libraries for the project review
 import os
 import time
 
@@ -33,13 +35,13 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import normalize
 
 # ----------------------------------------------------------------------
-# Configuration
+# setting the basic requirements for the clustering mechanisms and enabling the path for the trained models for the streamlit deployment as the data set is huge
 # ----------------------------------------------------------------------
 MIN_USER_RATINGS = 5        # users with fewer ratings are dropped
 MIN_PRODUCT_RATINGS = 10    # products with fewer ratings are dropped
 MIN_POPULAR_RATINGS = 50    # minimum ratings for the popularity baseline
 N_COMPONENTS = 50           # TruncatedSVD components
-N_CLUSTERS = 5
+N_CLUSTERS = 4
 TOP_N_PER_CLUSTER = 50
 RANDOM_STATE = 42
 
@@ -57,41 +59,6 @@ if IN_COLAB:
     DATA_PATH = "/content/drive/MyDrive/ratings.csv"
 else:
     DATA_PATH = "ratings.csv"
-
-
-# ----------------------------------------------------------------------
-# Plot helpers
-# ----------------------------------------------------------------------
-def bar_with_labels(x, y, title, xlabel, ylabel, label_fmt="{:,.0f}",
-                    color="skyblue", figsize=(8, 5), rotate=0):
-    """Bar chart with a value label on every bar."""
-    plt.figure(figsize=figsize)
-    ax = sns.barplot(x=x, y=y, color=color)
-    ax.set(title=title, xlabel=xlabel, ylabel=ylabel)
-    for container in ax.containers:
-        ax.bar_label(
-            container,
-            labels=[label_fmt.format(bar.get_height()) for bar in container],
-            padding=3,
-        )
-    plt.xticks(rotation=rotate)
-    plt.show()
-
-
-def plot_sparse_heatmap(data, title):
-    """Blue cell = user rated the product, white cell = not rated."""
-    top_users = data["userid"].value_counts().head(30).index
-    top_products = data["productid"].value_counts().head(30).index
-    small = data[data["userid"].isin(top_users) & data["productid"].isin(top_products)]
-    matrix = small.pivot_table(index="userid", columns="productid", values="ratings")
-
-    plt.figure(figsize=(12, 7))
-    sns.heatmap(matrix.notnull(), cmap="Blues", cbar=False, linewidths=0.5)
-    plt.title(title)
-    plt.xlabel("Product ID")
-    plt.ylabel("User ID")
-    plt.show()
-
 
 # ----------------------------------------------------------------------
 # 1. Load data
@@ -129,7 +96,40 @@ print("Overall shape:", df.shape)
 print(df.describe())
 
 # ----------------------------------------------------------------------
-# 2. EDA
+# VISUALISATION FUNCTION
+# ----------------------------------------------------------------------
+def bar_with_labels(x, y, title, xlabel, ylabel, label_fmt="{:,.0f}",
+                    color="skyblue", figsize=(8, 5), rotate=0):
+    """Bar chart with a value label on every bar."""
+    plt.figure(figsize=figsize)
+    ax = sns.barplot(x=x, y=y, color=color)
+    ax.set(title=title, xlabel=xlabel, ylabel=ylabel)
+    for container in ax.containers:
+        ax.bar_label(
+            container,
+            labels=[label_fmt.format(bar.get_height()) for bar in container],
+            padding=3,
+        )
+    plt.xticks(rotation=rotate)
+    plt.show()
+
+
+def plot_sparse_heatmap(data, title):
+    """Blue cell = user rated the product, white cell = not rated."""
+    top_users = data["userid"].value_counts().head(30).index
+    top_products = data["productid"].value_counts().head(30).index
+    small = data[data["userid"].isin(top_users) & data["productid"].isin(top_products)]
+    matrix = small.pivot_table(index="userid", columns="productid", values="ratings")
+
+    plt.figure(figsize=(12, 7))
+    sns.heatmap(matrix.notnull(), cmap="Blues", cbar=False, linewidths=0.5)
+    plt.title(title)
+    plt.xlabel("Product ID")
+    plt.ylabel("User ID")
+    plt.show()
+
+# ----------------------------------------------------------------------
+# 2. EDA PART
 # ----------------------------------------------------------------------
 rating_counts = df["ratings"].value_counts().sort_index()
 print("\nRating distribution:\n", rating_counts)
@@ -173,6 +173,7 @@ print(f"Products with exactly 1 rating: {(ratings_per_product == 1).sum():,} "
 plot_sparse_heatmap(df, "Sparse User-Product Matrix (raw data)")
 
 
+
 # ----------------------------------------------------------------------
 # 3. Filter active users / products
 # ----------------------------------------------------------------------
@@ -208,7 +209,6 @@ print(f"Retained {len(df_filtered):,} of {len(df):,} ratings "
       f"({len(df_filtered) / len(df) * 100:.1f}%)")
 
 plot_sparse_heatmap(df_filtered, "Sparse User-Product Matrix (filtered data)")
-
 
 # ----------------------------------------------------------------------
 # 4. User-item matrix (ML models need numeric indices, not text IDs)
