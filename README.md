@@ -2,7 +2,7 @@
 
 An e-commerce product recommendation system built from user ratings. It combines a popularity baseline, item-item collaborative filtering (cosine similarity) and user clustering (KMeans, MiniBatchKMeans, DBSCAN, Agglomerative), and serves the results through an interactive **Streamlit** app.
 
-**Live app:** `<add your Streamlit app URL here>`
+**Live app:** `<https://appuctrecommendationsys-4m4egrq4kfnca9gydv5fth.streamlit.app guys>`
 
 <!-- Add screenshots here, for example:
 ![User recommendations](screenshots/user_recommendations.png)
