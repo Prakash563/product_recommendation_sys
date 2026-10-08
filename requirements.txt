@@ -4,5 +4,3 @@ numpy
 scipy
 scikit-learn
 joblib
-matplotlib
-seaborn
